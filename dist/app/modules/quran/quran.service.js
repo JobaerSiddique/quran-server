@@ -159,13 +159,49 @@ const seedQuranFromAPI = async () => {
         throw new AppError_1.default(http_status_1.default.INTERNAL_SERVER_ERROR, "Failed to seed Quran database");
     }
 };
+// const getAllSurahsFromDB = async (query: Record<string, unknown>) => {
+//   try {
+//     const baseQuery = Surah.find({ isDeleted: false });
+//     const surahQuery = new QueryBuilder(baseQuery, query)
+//       .search(["nameEnglish", "nameArabic", "nameTransliteration"])
+//       .filter()
+//       .sort()
+//       .fields()
+//       .paginate();
+//     const [result, total] = await Promise.all([
+//       surahQuery.modelQuery.exec(),
+//       Surah.countDocuments(surahQuery.modelQuery.getFilter()),
+//     ]);
+//     const limit = Math.max(1, Math.min(Number(query.limit) || 114, 114));
+//     const page = Math.max(1, Number(query.page) || 1);
+//     const totalPage = Math.ceil(total / limit);
+//     return {
+//       meta: {
+//         page,
+//         limit,
+//         total,
+//         totalPage,
+//       },
+//       data: result,
+//     };
+//   } catch (error) {
+//     throw new AppError(
+//       httpStatus.INTERNAL_SERVER_ERROR,
+//       "Failed to retrieve surahs",
+//     );
+//   }
+// };
 const getAllSurahsFromDB = async (query) => {
     try {
+        // Add default sort by surahNumber if no sort is specified
+        if (!query.sort) {
+            query.sort = "surahNumber";
+        }
         const baseQuery = quran_model_1.Surah.find({ isDeleted: false });
         const surahQuery = new QueryBuilder_1.default(baseQuery, query)
             .search(["nameEnglish", "nameArabic", "nameTransliteration"])
             .filter()
-            .sort()
+            .sort() // This will use 'surahNumber' as default
             .fields()
             .paginate();
         const [result, total] = await Promise.all([
@@ -182,7 +218,7 @@ const getAllSurahsFromDB = async (query) => {
                 total,
                 totalPage,
             },
-            data: result,
+            data: result, // This will have surah 1 first, then 2, 3... 114
         };
     }
     catch (error) {
@@ -219,51 +255,88 @@ const getSingleAyahFromDB = async (surahNumber, ayahNumber) => {
     }
     return ayah;
 };
-const searchAyahsInDB = async (searchTerm, query) => {
-    if (!searchTerm || searchTerm.trim().length === 0) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Search term is required");
-    }
-    try {
-        // Use text search for better results
-        const searchRegex = new RegExp(searchTerm, "i");
-        const baseQuery = quran_model_1.Ayah.find({
+// const searchAyahsInDB = async (
+//   searchTerm: string,
+//   query: Record<string, unknown>,
+// ) => {
+//   if (!searchTerm || searchTerm.trim().length === 0) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Search term is required");
+//   }
+//   try {
+//     // Use text search for better results
+//     const searchRegex = new RegExp(searchTerm, "i");
+//     console.log(searchRegex);
+//     const baseQuery = Ayah.find({
+//       isDeleted: false,
+//       $or: [{ textEnglish: searchRegex }, { textArabic: searchRegex }],
+//     }).populate("surah");
+//     const ayahQuery = new QueryBuilder(baseQuery, query)
+//       .filter()
+//       .sort()
+//       .fields()
+//       .paginate();
+//     const [result, total] = await Promise.all([
+//       ayahQuery.modelQuery.limit(50).exec(), // Limit to 50 results for performance
+//       Ayah.countDocuments(ayahQuery.modelQuery.getFilter()),
+//     ]);
+//     // Enhance results with surah info
+//     const enhancedResults = await Promise.all(
+//       result.map(async (ayah) => {
+//         const surah = await Surah.findOne({ surahNumber: ayah.surahNumber });
+//         return {
+//           ...ayah.toObject(),
+//           surahInfo: surah,
+//         };
+//       }),
+//     );
+//     const limit = Math.max(1, Math.min(Number(query.limit) || 20, 50));
+//     const page = Math.max(1, Number(query.page) || 1);
+//     const totalPage = Math.ceil(total / limit);
+//     return {
+//       meta: {
+//         page,
+//         limit,
+//         total,
+//         totalPage,
+//         searchTerm,
+//       },
+//       data: enhancedResults,
+//     };
+//   } catch (error) {
+//     throw new AppError(
+//       httpStatus.INTERNAL_SERVER_ERROR,
+//       "Failed to search ayahs",
+//     );
+//   }
+// };
+const searchAyahsInDB = async (searchTerm) => {
+    const clean = searchTerm.trim();
+    const filter = {
+        isDeleted: false,
+        $text: { $search: clean },
+    };
+    let result = await quran_model_1.Ayah.find(filter, {
+        score: { $meta: "textScore" },
+    })
+        .populate("surah")
+        .sort({ score: { $meta: "textScore" } })
+        .limit(20);
+    if (result.length === 0) {
+        const regex = new RegExp(clean, "i");
+        result = await quran_model_1.Ayah.find({
             isDeleted: false,
-            $or: [{ textEnglish: searchRegex }, { textArabic: searchRegex }],
-        }).populate("surah");
-        const ayahQuery = new QueryBuilder_1.default(baseQuery, query)
-            .filter()
-            .sort()
-            .fields()
-            .paginate();
-        const [result, total] = await Promise.all([
-            ayahQuery.modelQuery.limit(50).exec(), // Limit to 50 results for performance
-            quran_model_1.Ayah.countDocuments(ayahQuery.modelQuery.getFilter()),
-        ]);
-        // Enhance results with surah info
-        const enhancedResults = await Promise.all(result.map(async (ayah) => {
-            const surah = await quran_model_1.Surah.findOne({ surahNumber: ayah.surahNumber });
-            return {
-                ...ayah.toObject(),
-                surahInfo: surah,
-            };
-        }));
-        const limit = Math.max(1, Math.min(Number(query.limit) || 20, 50));
-        const page = Math.max(1, Number(query.page) || 1);
-        const totalPage = Math.ceil(total / limit);
-        return {
-            meta: {
-                page,
-                limit,
-                total,
-                totalPage,
-                searchTerm,
-            },
-            data: enhancedResults,
-        };
+            textEnglish: regex,
+        })
+            .populate("surah")
+            .limit(20);
     }
-    catch (error) {
-        throw new AppError_1.default(http_status_1.default.INTERNAL_SERVER_ERROR, "Failed to search ayahs");
-    }
+    return {
+        meta: {
+            total: result.length,
+            searchTerm: clean,
+        },
+        data: result,
+    };
 };
 const getAyahsByJuzFromDB = async (juzNumber, query) => {
     try {

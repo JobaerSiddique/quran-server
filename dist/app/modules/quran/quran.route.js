@@ -29,7 +29,11 @@ const seedLimiter = (0, express_rate_limit_1.default)({
 router.get("/surahs", quran_controller_1.QuranController.getAllSurahs);
 router.get("/surah/:id", quran_controller_1.QuranController.getSingleSurah);
 router.get("/ayah/:surahId/:ayahId", quran_controller_1.QuranController.getSingleAyah);
-router.get("/search", searchLimiter, quran_controller_1.QuranController.searchAyahs);
+// router.get("/search", searchLimiter, QuranController.searchAyahs);
+router.get("/search", searchLimiter, (req, res, next) => {
+    // Handle both GET and POST for search
+    quran_controller_1.QuranController.searchAyahs(req, res, next);
+});
 router.get("/juz/:juzNumber", quran_controller_1.QuranController.getAyahsByJuz);
 router.get("/page/:pageNumber", quran_controller_1.QuranController.getAyahsByPage);
 router.get("/stats", quran_controller_1.QuranController.getQuranStats);

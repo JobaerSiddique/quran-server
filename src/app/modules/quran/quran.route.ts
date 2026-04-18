@@ -27,7 +27,11 @@ const seedLimiter = rateLimit({
 router.get("/surahs", QuranController.getAllSurahs);
 router.get("/surah/:id", QuranController.getSingleSurah);
 router.get("/ayah/:surahId/:ayahId", QuranController.getSingleAyah);
-router.get("/search", searchLimiter, QuranController.searchAyahs);
+// router.get("/search", searchLimiter, QuranController.searchAyahs);
+router.get("/search", searchLimiter, (req, res, next) => {
+  // Handle both GET and POST for search
+  QuranController.searchAyahs(req, res, next);
+});
 router.get("/juz/:juzNumber", QuranController.getAyahsByJuz);
 router.get("/page/:pageNumber", QuranController.getAyahsByPage);
 router.get("/stats", QuranController.getQuranStats);

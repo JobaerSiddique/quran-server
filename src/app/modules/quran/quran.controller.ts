@@ -275,10 +275,33 @@ const getSingleAyah = catchAsync(async (req, res) => {
   });
 });
 
-const searchAyahs = catchAsync(async (req, res) => {
-  const q = getQueryParam(req.query.q);
+// const searchAyahs = catchAsync(async (req, res) => {
+//   const q = getQueryParam(req.query.q);
 
-  if (!q) {
+//   if (!q) {
+//     return sendResponse(res, {
+//       statusCode: httpStatus.BAD_REQUEST,
+//       success: false,
+//       message: 'Search query parameter "q" is required',
+//       data: null,
+//     });
+//   }
+
+//   const result = await QuranService.searchAyahsInDB(q, req.query);
+
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: `Found ${result.meta.total} results for "${q}"`,
+//     meta: result.meta,
+//     data: result.data,
+//   });
+// });
+
+const searchAyahs = catchAsync(async (req, res) => {
+  const q = (req.query.q || req.query.search) as string;
+
+  if (!q || q.trim().length === 0) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,
@@ -292,7 +315,7 @@ const searchAyahs = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `Found ${result.meta.total} results for "${q}"`,
+    message: `Found ${result.meta.total} results`,
     meta: result.meta,
     data: result.data,
   });
