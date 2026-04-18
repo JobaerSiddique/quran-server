@@ -4,8 +4,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
-// import notFound from "./app/middlewares/notFound";
-// import router from "./app/route";
 import config from "./app/config";
 import globalErrorHandler from "./app/middleware/globalErrorhandler";
 import router from "./app/routes";

@@ -3,15 +3,7 @@ import rateLimit from "express-rate-limit";
 import { QuranController } from "./quran.controller";
 
 const router = express.Router();
-console.log("Importing QuranController...");
 
-console.log("QuranController:", QuranController);
-console.log("getAllSurahs:", QuranController?.getAllSurahs);
-
-// At the end of quarn.controller.ts
-console.log("Exporting QuranController from controller file");
-
-console.log("Exported QuranController:", QuranController);
 // Specific rate limiters
 const searchLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
