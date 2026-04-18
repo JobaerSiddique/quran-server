@@ -109,18 +109,7 @@ app.use("/api/v1", router);
 
 // Root endpoint
 app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Quran API is running",
-    version: "1.0.0",
-    endpoints: {
-      surahs: "/api/v1/quran/surahs",
-      surah: "/api/v1/quran/surah/:id",
-      search: "/api/v1/quran/search?q=keyword",
-      seed: "/api/v1/quran/seed (POST)",
-    },
-    documentation: "/api/v1/docs",
-  });
+  res.send("Hurry Quran server is running ");
 });
 
 // Error handling middleware (should be last)
