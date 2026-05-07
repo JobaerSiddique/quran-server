@@ -29,16 +29,27 @@ app.use(
 );
 
 // CORS configuration
+// const corsOptions = {
+//   origin: config.frontend_url || "http://localhost:3000",
+
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+//   exposedHeaders: ["Content-Range", "X-Content-Range"],
+//   maxAge: 600, // 10 minutes
+// };
+// app.use(cors(corsOptions));
+
 const corsOptions = {
-  origin: config.frontend_url || [
-    "http://localhost:3000",
-    "http://localhost:3001",
-  ],
+  origin:
+    process.env.NODE_ENV === "production"
+      ? config.frontend_url // Use only the production URL
+      : "http://localhost:3000", // Use only localhost for development
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   exposedHeaders: ["Content-Range", "X-Content-Range"],
-  maxAge: 600, // 10 minutes
+  maxAge: 600,
 };
 app.use(cors(corsOptions));
 

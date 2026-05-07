@@ -27,16 +27,24 @@ app.use((0, helmet_1.default)({
     crossOriginEmbedderPolicy: false,
 }));
 // CORS configuration
+// const corsOptions = {
+//   origin: config.frontend_url || "http://localhost:3000",
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+//   exposedHeaders: ["Content-Range", "X-Content-Range"],
+//   maxAge: 600, // 10 minutes
+// };
+// app.use(cors(corsOptions));
 const corsOptions = {
-    origin: config_1.default.frontend_url || [
-        "http://localhost:3000",
-        "http://localhost:3001",
-    ],
+    origin: process.env.NODE_ENV === "production"
+        ? config_1.default.frontend_url // Use only the production URL
+        : "http://localhost:3000", // Use only localhost for development
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     exposedHeaders: ["Content-Range", "X-Content-Range"],
-    maxAge: 600, // 10 minutes
+    maxAge: 600,
 };
 app.use((0, cors_1.default)(corsOptions));
 // Rate limiting - Prevent DDOS and brute force attacks

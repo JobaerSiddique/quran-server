@@ -1,4 +1,5 @@
 "use strict";
+// import { Query, FilterQuery } from "mongoose";
 Object.defineProperty(exports, "__esModule", { value: true });
 class QueryBuilder {
     constructor(modelQuery, query) {
@@ -81,13 +82,24 @@ class QueryBuilder {
         return this;
     }
     /**
-     * Apply population for referenced fields
-     * @param populateFields - Array of population configurations
+     * Apply population for referenced fields (simplified version)
+     * @param populateFields - String path or array of string paths
      * @returns QueryBuilder instance
      */
     populate(populateFields) {
         if (populateFields) {
             this.modelQuery = this.modelQuery.populate(populateFields);
+        }
+        return this;
+    }
+    /**
+     * Apply population with advanced options
+     * @param populateOptions - PopulateOptions object or array
+     * @returns QueryBuilder instance
+     */
+    populateAdvanced(populateOptions) {
+        if (populateOptions) {
+            this.modelQuery = this.modelQuery.populate(populateOptions);
         }
         return this;
     }
